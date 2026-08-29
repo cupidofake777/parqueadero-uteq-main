@@ -1,0 +1,68 @@
+/* Barra de navegación compartida (no depende de CoreUI) para que se
+   pueda usar tanto en el simulador como en el panel de administración
+   sin cargar los estilos de CoreUI en todo el sitio. */
+
+.app-topnav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #0f172a;
+  border-bottom: 1px solid #1e293b;
+  color: #f8fafc;
+}
+
+.app-topnav__inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.app-topnav__brand {
+  display: flex;
+  align-items: center;
+  color: #f8fafc;
+  text-decoration: none;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.app-topnav__links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-topnav__link {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.app-topnav__link:hover {
+  background: rgba(148, 163, 184, 0.14);
+  color: #f8fafc;
+}
+
+.app-topnav__link--active {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+}
+
+@media (max-width: 640px) {
+  .app-topnav__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+}

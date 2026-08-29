@@ -1,0 +1,79 @@
+/* Contenedor del panel de administración: mismo lenguaje visual (fondo
+   navy, tipografía, acentos) que el dashboard del simulador, pero a todo
+   lo ancho de la pantalla en vez de centrado en una columna angosta. */
+.admin-shell {
+  min-height: 100vh;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.admin-page {
+  padding: 28px 32px 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.admin-page__heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-page__icon {
+  color: #38bdf8;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.admin-page__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.admin-page__subtitle {
+  margin: 5px 0 0;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Acento azul consistente con los botones primarios del simulador
+   (#2563eb), en lugar del azul/morado por defecto de CoreUI. */
+.admin-shell .btn-primary {
+  --cui-btn-bg: #2563eb;
+  --cui-btn-border-color: #2563eb;
+  --cui-btn-hover-bg: #1d4ed8;
+  --cui-btn-hover-border-color: #1d4ed8;
+  --cui-btn-active-bg: #1d4ed8;
+  --cui-btn-active-border-color: #1d4ed8;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+}
+
+.admin-shell .page-link,
+.admin-shell .page-item.active .page-link {
+  --cui-pagination-active-bg: #2563eb;
+  --cui-pagination-active-border-color: #2563eb;
+}
+
+@media (max-width: 576px) {
+  .admin-page {
+    padding: 20px 16px 32px;
+  }
+
+  .admin-page__title {
+    font-size: 22px;
+  }
+}
