@@ -12,8 +12,7 @@ dos módulos independientes construidos sobre la misma base de React + Vite:
 
 ![Panel de administración de vehículos](docs/screenshot-panel-vehiculos.png)
 
-> Reemplaza la imagen de arriba (`docs/screenshot-panel-vehiculos.png`) por
-> una captura real del panel una vez que lo ejecutes localmente.
+
 
 ## Tecnologías utilizadas
 
