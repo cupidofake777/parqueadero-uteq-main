@@ -9,10 +9,17 @@ dos módulos independientes construidos sobre la misma base de React + Vite:
    vehículos y propietarios sobre **Supabase**, construido con **CoreUI**.
    Es el módulo desarrollado en la práctica *"Panel de Administración del
    Smart Parking UTEQ"*.
+3. **Monitoreo de entrada** (`/parqueadero/monitoreo-entrada`): captura una
+   foto con la cámara del dispositivo (o selecciona una imagen JPG/PNG),
+   la envía a un endpoint REST de reconocimiento de placas (OCR) y
+   muestra si el vehículo está registrado y autorizado en Supabase. Es el
+   módulo desarrollado en la práctica *"Monitoreo inteligente de ingreso
+   vehicular"*.
 
 ![Panel de administración de vehículos](docs/screenshot-panel-vehiculos.png)
 
-
+> Reemplaza la imagen de arriba (`docs/screenshot-panel-vehiculos.png`) por
+> una captura real del panel una vez que lo ejecutes localmente.
 
 ## Tecnologías utilizadas
 
@@ -20,6 +27,7 @@ dos módulos independientes construidos sobre la misma base de React + Vite:
 |------------------------|-------------|
 | Simulador IoT           | React, Vite, Firebase Realtime Database, Leaflet / React-Leaflet, Lucide React |
 | Panel de administración | React, Vite, React Router, **CoreUI (@coreui/react)**, **Supabase (@supabase/supabase-js)** |
+| Monitoreo de entrada     | React, **MediaDevices API** (`getUserMedia`), `fetch` contra un endpoint REST de OCR (Azure Function) |
 
 ## Estructura del proyecto (nuevas carpetas/archivos de esta práctica)
 
@@ -34,13 +42,18 @@ src/
 ├─ lib/
 │  └─ supabase.js                  # Cliente de Supabase (createClient)
 ├─ hooks/
-│  └─ useVehiculos.js              # Listado, búsqueda, paginación y CRUD
+│  ├─ useVehiculos.js              # Listado, búsqueda, paginación y CRUD
+│  ├─ useCamara.js                 # Acceso a la cámara (getUserMedia) y captura a Blob
+│  └─ useDeteccionPlaca.js         # Consumo del endpoint REST de OCR
 ├─ views/
 │  └─ parqueadero/
 │     ├─ ListaVehiculos.jsx        # Vista principal (tabla, búsqueda, paginación)
 │     ├─ VehiculoFormModal.jsx     # Modal de alta/edición con validaciones
 │     ├─ ConfirmDeleteModal.jsx    # Modal de confirmación de borrado
-│     └─ vehiculo.utils.js         # Validaciones y normalización de datos
+│     ├─ vehiculo.utils.js         # Validaciones y normalización de datos
+│     ├─ MonitoreoEntrada.jsx      # Vista de monitoreo de entrada (cámara + OCR)
+│     ├─ monitoreo.utils.js        # Validación de imágenes y mapeo de estados del OCR
+│     └─ monitoreo.css             # Estilos de la vista de monitoreo
 supabase_parqueadero_uteq.sql      # Script SQL (tablas, datos, RLS)
 .env.example                       # Plantilla de variables de entorno
 ```
@@ -144,6 +157,78 @@ listo para probarse desde la interfaz y tomar las capturas del PDF.
 - Durante cualquier operación se muestran indicadores de carga
   (`CSpinner`), mensajes de éxito/error (toasts y alertas de CoreUI) y los
   botones se deshabilitan para evitar envíos duplicados.
+
+## Monitoreo de entrada (reconocimiento de placas)
+
+La vista `/parqueadero/monitoreo-entrada` permite capturar o seleccionar
+una foto de un vehículo, enviarla a un endpoint REST de OCR y verificar en
+Supabase si está autorizado a ingresar.
+
+### Variable de entorno
+
+Agrega a tu `.env.local` (nunca la escribas en el código ni la subas al
+repositorio, ya que incluye un código de acceso):
+
+```env
+VITE_OCR_ENDPOINT=https://<tu-endpoint-ocr>.azurewebsites.net/api/detectar-placa?code=<tu_codigo>
+```
+
+### Uso
+
+- **Cámara:** botón "Activar cámara" solicita permiso al navegador
+  (`getUserMedia`) y muestra la vista previa en vivo, usando la cámara
+  trasera por defecto en dispositivos móviles. "Capturar foto" toma el
+  fotograma actual como imagen a procesar. "Detener cámara" libera el
+  dispositivo (también se libera automáticamente al salir de la vista).
+- **Archivo:** alternativa para seleccionar una imagen JPG/PNG ya
+  existente en el dispositivo (máximo 4 MiB).
+- **Detectar placa:** envía la imagen (como `Blob`/`File`, sin
+  Base64) al endpoint REST mediante `POST`. Mientras se espera la
+  respuesta, el botón se deshabilita y muestra un indicador de carga.
+- **Resultado:** según el campo `estado` de la respuesta, se muestra el
+  vehículo y propietario encontrados (`encontrado`), un aviso de que la
+  placa no existe en Supabase (`no_registrado`), o una advertencia para
+  volver a capturar la imagen (`sin_placa`, `baja_confianza`,
+  `multiples_placas`). Los errores HTTP (400/413/415/502/504) y de red se
+  muestran con un mensaje claro y un botón de reintento.
+
+### Despliegue en Azure
+
+**Nota:** la opción recomendada por la práctica es **Azure Static Web
+Apps**, pero la cuenta **Azure for Students** usada en este proyecto no
+tiene habilitadas las regiones necesarias para crear ese recurso. Como
+alternativa equivalente (mismo requisito de "desplegado en Azure con
+HTTPS"), se usa un **Storage Account de Azure con "Static website"
+habilitado**, que no tiene esa restricción de región y entrega HTTPS por
+defecto en su endpoint público.
+
+1. En el [Portal de Azure](https://portal.azure.com), crea un
+   **Storage Account** (Standard, redundancia LRS, cualquier región
+   disponible en tu suscripción).
+2. Dentro del recurso, ve a **Data management → Static website** y
+   habilítalo. Configura:
+   - **Índice del documento:** `index.html`
+   - **Ruta del documento de error:** `index.html` (para que las rutas de
+     React Router, como `/parqueadero/monitoreo-entrada`, sigan
+     funcionando si alguien recarga la página directamente en esa ruta)
+   - Guarda y copia el **"Punto de conexión principal"** (algo como
+     `https://<cuenta>.z13.web.core.windows.net/`); esa es tu URL pública.
+3. Ve a **Access keys** del Storage Account y copia el nombre de la
+   cuenta y una de las claves (`key1`).
+4. En GitHub, ve a **Settings → Secrets and variables → Actions** y crea
+   estos secretos:
+   - `AZURE_STORAGE_ACCOUNT` → el nombre de tu Storage Account.
+   - `AZURE_STORAGE_KEY` → la clave (`key1`) que copiaste.
+   - `VITE_OCR_ENDPOINT` → la URL completa que te entregó el docente.
+   - `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` → los mismos valores
+     de tu `.env.local`.
+5. El workflow `.github/workflows/deploy-azure-storage.yml` ya incluido
+   en este repositorio compila el proyecto con esas variables y sube
+   `dist/` al contenedor `$web` del Storage Account en cada `push` a
+   `main`. No necesitas editarlo, solo crear los secretos del paso 4.
+6. El endpoint `*.web.core.windows.net` de Azure Storage sirve el sitio
+   con **HTTPS** por defecto, requisito indispensable para que el
+   navegador permita el acceso a la cámara en la URL pública.
 
 ## Simulador IoT (práctica anterior)
 

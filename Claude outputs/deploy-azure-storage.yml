@@ -1,0 +1,44 @@
+name: Desplegar en Azure Storage (sitio estático)
+
+# Alternativa a Azure Static Web Apps: la cuenta "Azure for Students" usada
+# en esta práctica no tiene habilitadas las regiones necesarias para crear
+# un recurso Static Web App. Un Storage Account con "Static website"
+# habilitado no tiene esa restricción y también entrega HTTPS por defecto
+# en su endpoint (https://<cuenta>.z##.web.core.windows.net), cumpliendo
+# el mismo requisito de despliegue con HTTPS de la rúbrica.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar (Vite)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_OCR_ENDPOINT: ${{ secrets.VITE_OCR_ENDPOINT }}
+
+      - name: Subir dist/ al contenedor $web del Storage Account
+        run: |
+          az storage blob upload-batch \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT }}" \
+            --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
+            --source dist \
+            --destination '$web' \
+            --overwrite

@@ -1,0 +1,128 @@
+/* Vista "Monitoreo de entrada": dos columnas (captura / resultados),
+   mismo lenguaje visual (tarjetas oscuras, acento azul) que el resto del
+   panel de administración. */
+
+.monitoreo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .monitoreo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.monitoreo-card {
+  height: 100%;
+}
+
+.monitoreo-video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #0b1220;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.monitoreo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.monitoreo-video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+}
+
+.monitoreo-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.monitoreo-preview img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #0b1220;
+}
+
+.monitoreo-badge {
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.monitoreo-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.monitoreo-datos__etiqueta {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+.monitoreo-datos__valor {
+  display: block;
+  font-weight: 600;
+}
+
+.monitoreo-vehiculo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #1e293b;
+}
+
+.monitoreo-vehiculo__bloque {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.monitoreo-vehiculo__foto {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #0b1220;
+}
+
+.monitoreo-vehiculo__foto--circular {
+  border-radius: 50%;
+}
+
+@media (max-width: 576px) {
+  .monitoreo-vehiculo__bloque {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
